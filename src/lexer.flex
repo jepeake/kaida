@@ -370,10 +370,6 @@ IS			(u|U|l|L)*
           *yylval.string = yytext;
           return EXCLAM; }
 
-
-
-
-
 0[xX]{H}+{IS}?			{ fprintf(stderr, "Number : %s/n", yytext), yylval.intNumber = atoi(yytext); return(INT_CONSTANT); }
 
 0{D}+{IS}?				{ fprintf(stderr, "Number : %s/n", yytext), yylval.intNumber = atoi(yytext); return(INT_CONSTANT); }
@@ -390,22 +386,6 @@ L?'(\\.|[^\\'])+'		{}
 
 {D}+"."{D}*({E})?{FS}?	{ fprintf(stderr, "Number : %s/n", yytext), yylval.intNumber = atof(yytext); return(FLOAT_CONSTANT); }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [ \t\r\n]+ {;}
 
 . { fprintf(stderr, "invalid token \n"); exit (1); }
@@ -418,5 +398,3 @@ void yyerror (char const *s)
   fprintf (stderr, "lex error: %s\n", s);
   exit(1);
 }
-
-

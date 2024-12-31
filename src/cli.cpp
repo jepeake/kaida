@@ -3,7 +3,6 @@
 int parse_command_line_args(int argc, char **argv, std::string &sourcePath, std::string &outputPath)
 {
     std::string input = "";
-
     if ((argc <= 1) || (argv[argc - 1] == NULL) || (argv[argc - 1][0] == '-'))
     {
         std::cerr << "No command line arguments were provided" << std::endl;
@@ -13,8 +12,6 @@ int parse_command_line_args(int argc, char **argv, std::string &sourcePath, std:
     {
         input = argv[argc - 1];
     }
-
-    // Prevent opterr messages from being outputted.
     opterr = 0;
 
     // bin/c_compiler -S [source-file.c] -o [dest-file.s]

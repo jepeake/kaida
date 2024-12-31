@@ -1,81 +1,55 @@
 #include "ast.hpp"
-
 #include <string>
 #include <regex>
 #include <map>
 
 static int makeNameUnq1=0;
-
 static int makeNameUnq2=0;
-
 static std::string makeName(std::string base)
 {
     return base+std::to_string(makeNameUnq1++);
 }
-
 static std::string makeNameParam(std::string base)
 {
     return base+std::to_string(makeNameUnq2++);
 }
 
 std::map <std::string, std::string> varToReg;
-
 int maxnumberofelements;
 int elementnumber=0;
 
-
-
-
-
 void CompileRec(
-    std::string destReg,    // The name of the register to put the result in
+    std::string destReg,   
     nodePtr program,
     std::ostream &w
 ){
 
     //PRIMITIVES
-
     if(program->getNodeType() == "int"){
         if( ((intNode*)program)->getInt() > 2047){
             w << "addi " << destReg << ", " << "zero" << ", " << 0 << std::endl;
             w << "lui " << destReg << ", " << "%hi(" << ((intNode*)program)->getInt() << ")" << std::endl;
             w << "addi " << destReg << ", " << destReg << ", " << "%lo(" << ((intNode*)program)->getInt() << ")" << std::endl;
-
         }
         else{
             w << "addi " << destReg << ", " << "zero" << ", " << 0 << std::endl;
             w << "addi " << destReg <<", " << destReg << ", " << ((intNode*)program)->getInt() << std::endl;
         }
-
     }
 
     else if(program->getNodeType() == "ident"){
         varToReg[((identNode*)program)->getId()] = destReg;
     }
-
-
-
-
-
-
+        
     //KEYWORDS
     else if(program->getNodeType() == "int"){
 
     }
 
-
-
-
-
    // UNARY OPERATORS
-
-
     else if(program->getNodeType() == "unaryInc"){
-
-
         CompileRec(destReg, ((unaryIncNode*)program)->getExpr(), w);
         w << "addi " << destReg << ", " << destReg << ", 1" << std::endl;
-
     }
 
     else if(program->getNodeType() == "unaryBitwiseNot"){
@@ -83,12 +57,6 @@ void CompileRec(
         CompileRec(srcReg, ((unaryNotNode*)program)->getExpr(), w);
         w << "xori "<< destReg << ", " << srcReg << ", -1" << std::endl;
     }
-
-
-
-
-
-
 
    // ARITHMETIC OPERATORS
     else if(program->getNodeType() == "add"){
@@ -115,10 +83,8 @@ void CompileRec(
             CompileRec(temp2, ((addNode*)program)->getRight(), w);
             w << "add " << destReg << ", " << temp1 << ", " << temp2 << std::endl;
         }
-
-
     }
-
+        
     else if(program->getNodeType() == "sub"){
         if( ((((subNode*)program)->getLeft())->getNodeType() == "ident") && ((((subNode*)program)->getRight())->getNodeType() == "ident") ){
             w << "sub " << destReg << ", " << varToReg[((identNode*)((subNode*)program)->getLeft())->getId()] << ", " << varToReg[((identNode*)((subNode*)program)->getRight())->getId()] << std::endl;
@@ -143,8 +109,6 @@ void CompileRec(
             CompileRec(temp2, ((subNode*)program)->getRight(), w);
             w << "sub " << destReg << ", " << temp1 << ", " << temp2 << std::endl;
         }
-
-
     }
 
     else if(program->getNodeType() == "mul"){
@@ -353,18 +317,7 @@ void CompileRec(
 
     }
 
-
-
-
-
-
-
-
-
-
-
     //LOGICAL OPERATORS
-
     else if(program->getNodeType() == "and"){
         if( ((((andNode*)program)->getLeft())->getNodeType() == "ident") && ((((andNode*)program)->getRight())->getNodeType() == "ident") ){
             w << "and " << destReg << ", " << varToReg[((identNode*)((andNode*)program)->getLeft())->getId()] << ", " << varToReg[((identNode*)((addNode*)program)->getRight())->getId()] << std::endl;
@@ -535,32 +488,15 @@ void CompileRec(
             w << "sub " << destReg << ", " << temp1 << ", " << temp2 << std::endl;
             w << "seqz " << destReg << ", " << destReg << std::endl;
         }
-
-
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     //LOOPS
-
     else if(program->getNodeType() == "if"){
         std::string cond = makeName("t");
         CompileRec(cond, ((ifNode*)program)->getCondition(), w);
         w <<"beq "<<cond<<", "<<"zero"<<", "<<"Exit"<<std::endl;
         CompileRec(destReg, ((ifNode*)program)->getStat(), w);
         w << "Exit:" << std::endl;
-
-
     }
 
     else if(program->getNodeType() == "if_else"){
@@ -572,8 +508,6 @@ void CompileRec(
         w <<"Else:" << std::endl;
         CompileRec(destReg, ((ifElseNode*)program)->getElseStat(), w);
         w << "Exit:" << std::endl;
-
-
     }
 
     else if(program->getNodeType() == "while"){
@@ -584,7 +518,6 @@ void CompileRec(
         CompileRec(destReg, ((whileNode*)program)->getStat(), w);
         w << "bne " << condition << ", " << "zero" << ", " << "Loop" << std::endl;
         w << "Exit:" << std::endl;
-
     }
 
     else if(program->getNodeType() == "for1"){
@@ -597,9 +530,7 @@ void CompileRec(
         w << "bne " << condition << ", " << "zero" << ", " << "Loop" << std::endl;
         w << "Exit:" << std::endl;
     }
-
-
-
+        
     else if(program->getNodeType() == "for2"){
         std::string condition = makeName("t");
         CompileRec(condition, ((for2Node*)program)->getInit(), w);
@@ -610,7 +541,6 @@ void CompileRec(
         CompileRec(condition, ((for2Node*)program)->getIncr(), w);
         w << "bne " << condition << ", " << "zero" << ", " << "Loop" << std::endl;
         w << "Exit:" << std::endl;
-
     }
 
      else if(program->getNodeType() == "switch"){
@@ -664,21 +594,8 @@ void CompileRec(
 
 
      }
-
-
-
-
-
-
-
-
-
-
-
-
-
+         
     //FUNCTIONS AND SUPPORTING STRUCTURES
-
     else if(program->getNodeType() == "function"){
 
         if( (((funcNode*)program)->getDeclarator())->getNodeType() == "ident" ){
@@ -688,14 +605,10 @@ void CompileRec(
             w << "fsd fa0, -18(s0)" << std::endl;
             w << "fsd fa1, -32(s0)" << std::endl;
         }
-
         else{
              CompileRec(destReg, ((funcNode*)program)->getDeclarator(), w);
         }
-
         CompileRec(destReg, ((funcNode*) program)->getBody(), w);
-
-
     }
 
     else if(program->getNodeType() == "funcnamewithparams"){
@@ -710,32 +623,20 @@ void CompileRec(
         CompileRec(destReg, ((funcnamewithParams*) program)->getParams(), w);
     }
 
-
-
     else if(program->getNodeType() == "block1"){
-
     }
-
-
-
+        
     else if(program->getNodeType() == "block2"){
         CompileRec(destReg, ((block2Node*)program)->getstatementlist(), w);
-
-
     }
-
 
     else if(program->getNodeType() == "block3"){
         CompileRec(destReg, ((block3Node*)program)->getdeclarationlist(), w);
-
-
     }
 
     else if(program->getNodeType() == "block4"){
         CompileRec(destReg, ((block4Node*)program)->getdeclarationlist(), w);
         CompileRec(destReg, ((block4Node*)program)->getstatementlist(), w);
-
-
     }
 
     else if (program->getNodeType() == "return"){
@@ -759,22 +660,15 @@ void CompileRec(
 
     }
 
-
-
-
-
     //VARIABLE DECLARATIONS AND ASSIGNMENTS
-
     else if(program->getNodeType() == "initializeDeclarator"){
         std::string t = makeName("t");
         CompileRec(t, ((initializedDeclaratorNode*) program)->getDeclarator(), w);
         CompileRec(t, ((initializedDeclaratorNode*) program)->getInitializeValue(), w);
-
     }
 
     else if(program->getNodeType() == "declaration"){
         CompileRec(destReg, ((declarationNode*) program)->getDeclarator(), w);
-
     }
 
     else if(program->getNodeType() == "assign"){
@@ -789,7 +683,6 @@ void CompileRec(
             CompileRec(varToReg[((identNode*)((assignNode*) program)->getLeft())->getId()], ((assignNode*) program)->getRight(), w );//DID THIS FIX ISSUE
         }
     }
-
 
     else if(program->getNodeType() == "addAssign"){
         if((((addAssignNode*) program)->getRight())->getNodeType() == "int"){
@@ -966,8 +859,8 @@ void CompileRec(
 
 
     }
+        
     //LISTS
-
     else if(program->getNodeType() == "declarationList"){
         CompileRec(destReg, ((declarationListNode*) program)->getDeclarationList(), w);
         CompileRec(destReg, ((declarationListNode*) program)->getDeclaration(), w);
@@ -987,8 +880,6 @@ void CompileRec(
         CompileRec(paramReg2, ((parameterListNode*) program)->getParameterDeclaration(), w);
 
     }
-
-
 
    else if(program->getNodeType() == "statementList"){
         CompileRec(destReg, ((statementListNode*) program)->getStatementList(), w);
@@ -1010,11 +901,6 @@ void CompileRec(
         CompileRec(destReg, ((initializerListNode*) program)->getInitializer(), w);
 
     }
-
-
-
-
-
 
     //ARRAYS
 
@@ -1059,16 +945,7 @@ void CompileRec(
 
     }
 
-
-
-
-
-
     //MISC
-
-
-
-
     //if doesn't match any of these node types...
 
     else{
@@ -1080,12 +957,5 @@ void CompileRec(
 void Compile(nodePtr program, std::ostream &w)
 {
     w << ".text" << std::endl;
-    // Compile the whole thing
-
     CompileRec("a0", program, w);
-
 }
-
-
-
-//1000! :)
